@@ -1,6 +1,5 @@
 const fs = require('fs')
 
-
 class Contenedor{
     constructor(file){
         this.file = file;
@@ -69,3 +68,5 @@ const nuevoProducto = {
 }
 
 console.log(contenedor.deleteAll().then(res => console.log(res)))
+
+module.exports = Contenedor // 👈 Export class
