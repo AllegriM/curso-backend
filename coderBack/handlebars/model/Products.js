@@ -17,13 +17,12 @@ class Products {
 
     add(product) {
         console.log(product)
-        if (!product.nombre || !product.descripcion || !product.precio || !product.imagen) {
+        if (!product.nombre || !product.precio || !product.imagen) {
             return null;
         }
         const newProduct = {
             id: ++id,
             nombre: product.nombre,
-            descripcion: product.descripcion,
             precio: product.precio,
             imagen: product.imagen
         };
