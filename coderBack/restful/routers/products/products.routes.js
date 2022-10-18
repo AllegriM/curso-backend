@@ -51,7 +51,6 @@ router.put('/:id', async function (req, res, next) {
     }
     const productoIndex = products.findIndex(producto => producto.id === +id)
     if (productoIndex < 0) return res.status(404).json({ success: false, error: `Product with id: ${id} does not exist!` });
-    console.log(productoIndex)
     const newProduct = {
         ...products[productoIndex],
         title,
@@ -62,7 +61,6 @@ router.put('/:id', async function (req, res, next) {
     products[productoIndex] = newProduct
     console.log(newProduct)
     fs.writeFileSync('../../products.json', JSON.stringify(products, null, 2))
-    res.json(products)
 })
 
 router.delete('/:id', async function (req, res, next) {
