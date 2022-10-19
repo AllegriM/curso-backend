@@ -4,7 +4,11 @@ const { Server: SocketServer } = require('socket.io')
 const { engine } = require('express-handlebars')
 const path = require('path')
 const Products = require('./model/Products')
-const Mensajes = require('./model/Mensajes')
+const chatClient = require('./model/chat');
+const dbConfig = require('./DB/config');
+
+const chat = new chatClient(dbConfig.sqlite, 'chat')
+const productsList = new Products(dbConfig.sqlite, 'product')
 
 const PORT = process.env.PORT || 8080;
 const app = express()
@@ -14,9 +18,6 @@ const io = new SocketServer(httpServer)
 app.use(express.static('public'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-
-const productsList = new Products()
-const mensajes = new Mensajes('mensajes.json')
 
 app.engine('hbs', engine({
     extname: 'hbs',
@@ -29,40 +30,33 @@ app.set('views', __dirname + '/views')
 app.set('view engine', 'hbs')
 
 app.get('/', async (req, res) => {
-    const products = productsList.getAll()
-    const messajes = await mensajes.getAll()
-    res.render('./partials/main', { layout: "index", products, messajes })
+    const products = await productsList.getAll()
+    const messages = await chat.listMessages()
+    res.render('./partials/main', { layout: "index", products, messages })
 })
 
-// app.post('/products', (req, res) => {
-//     const product = req.body
-//     productsList.add(product)
-//     res.render('./partials/products', { layout: "index", products: productsList.getAll() })
-// })
-
-io.on('connection', (socket) => {
+io.on('connection', async (socket) => {
     console.log(`New client connection 💻: ${socket.id}`)
+
+    await chat.createTable()
+    await productsList.createTable()
+
+    const messages = await chat.listMessages();
+    socket.emit('message', messages)
 
     socket.on('disconnect', () => {
         console.log(socket.id, 'disconnected')
     })
 
     socket.on('add-product', product => {
-        productsList.add(product)
-
+        productsList.addProduct(product)
         io.emit('update-products', product)
     })
 
-    socket.on('message', async message => {
-        const data = {
-            email: message.email,
-            message: message.message,
-            date: new Date().toLocaleString(),
-        };
-
-        await mensajes.save(data);
-
-        io.emit('message', data);
+    socket.on('message', async (message) => {
+        chat.addMessage(message)
+        const messages = await chat.listMessages();
+        io.emit('message', messages)
     });
 
 })

@@ -1,4 +1,3 @@
-console.log("hello")
 const socket = io();
 
 const form = document.querySelector('#form');
@@ -25,9 +24,8 @@ form.addEventListener('submit', e => {
 });
 
 socket.on('update-products', product => {
-    console.log(product)
     const template = Handlebars.compile(
-        `<td>{{nombre}}</td><td>{{precio}}</td><td><img src={{imagen}}/></td>`
+        `<td>{{nombre}}</td><td>{{precio}}</td><td><img src={{imagen}} width="100" height="100"/></td>`
     );
 
     const tr = document.createElement('tr');
@@ -76,7 +74,7 @@ messageForm.addEventListener('submit', e => {
 
 socket.on('message', message => {
     const template = Handlebars.compile(
-        '<span style="color: blue; font-weight: 600;">{{this.email}}: </span><span style="color: brown;">[{{this.date}}] </span><span style="color: green; font-style: italic;">{{this.message}}</span>'
+        '<span style="color: blue; font-weight: 600;">{{this.email}}: </span><span style="color: green; font-style: italic;">{{this.message}}</span>'
     );
 
     const li = document.createElement('li');

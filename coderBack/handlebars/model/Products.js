@@ -1,59 +1,81 @@
-const products = []
-let id = 0
+const knex = require('knex')
 
 class Products {
-
-    constructor() {
-        this.list = products;
+    constructor(config, tableName) {
+        this.knex = knex(config);
+        this.tableName = tableName;
     }
-
-    getAll() {
-        return this.list;
+    async createTable() {
+        return this.knex.schema.hasTable(this.tableName)
+            .then(response => {
+                if (!response) {
+                    return this.knex.schema.createTable(this.tableName, (table) => {
+                        table.increments('id');
+                        table.string('nombre');
+                        table.float('precio');
+                        table.string('imagen');
+                    })
+                }
+            }).then(() => {
+                console.log('Tabla de productos creada');
+            }).catch((err) => {
+                console.log(err);
+            })
     }
-
-    getById(productId) {
-        return this.list.find(product => product.id === +productId);
-    }
-
-    add(product) {
-        console.log(product)
-        if (!product.nombre || !product.precio || !product.imagen) {
-            return null;
+    async getAll() {
+        try {
+            const products = await this.knex.from(this.tableName).select('nombre', 'precio', 'imagen');
+            return products
+        } catch (error) {
+            console.log('La base de datos tuvo un problema: ', error)
         }
-        const newProduct = {
-            id: ++id,
-            nombre: product.nombre,
-            precio: product.precio,
-            imagen: product.imagen
-        };
-        this.list.push(newProduct);
-        return newProduct;
+    }
+
+    async getById(productId) {
+        try {
+            const productByID = await this.knex.from(this.tableName).select('string', 'precio', 'imagen').where('id', productId);
+            return productByID
+        } catch (error) {
+            console.log('La base de datos tuvo un problema: ', error)
+        }
+    }
+
+    async addProduct(product) {
+        try {
+            const newProduct = {
+                nombre: product.nombre,
+                precio: product.precio,
+                imagen: product.imagen
+            };
+            await this.knex(this.tableName).insert(newProduct)
+            return 'Producto Agregado';
+        } catch (error) {
+            console.log('La base de datos tuvo un problema: ', error)
+        }
     };
 
-    updateById(productId, product) {
-        const productIndex = this.list.findIndex((producto) => producto.id === +productId);
-        if (productIndex < 0) return null;
+    async updateById(productId, product) {
         const {
             nombre,
             descripcion,
             precio,
             imagen
         } = product;
-        const updatedProduct = {
-            id: this.list[productIndex].id,
-            nombre,
-            descripcion,
-            precio,
-            imagen
-        };
-        this.list[productIndex] = updatedProduct;
-        return updatedProduct;
+        try {
+            await this.knex(this.tableName).where({ id: productId }).update({ nombre, descripcion, precio, imagen })
+            return 'Producto Actualizado!!';
+        } catch (error) {
+            console.log('La base de datos tuvo un problema: ', error)
+        }
     }
 
-    deleteById(productId) {
-        const productIndex = this.list.findIndex((producto) => producto.id === +productId);
-        if (productIndex < 0) return null;
-        return this.list.splice(productIndex, 1);
+    async deleteById(productId) {
+        try {
+            await this.knex(this.tableName).where({ id: productId }).del()
+            return 'Producto Eliminado!!'
+        } catch (error) {
+            console.log('La base de datos tuvo un problema: ', error)
+        }
     }
 }
 
