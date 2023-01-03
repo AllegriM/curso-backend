@@ -1,0 +1,21 @@
+{
+  "name": "sql",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "make-migrations": "knex migrate:make",
+    "migrate": "knex migrate:up",
+    "rollback": "knex migrate:rollback",
+    "list-migrations": "knex migrate:list"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "knex": "^2.3.0",
+    "mysql": "^2.18.1",
+    "sqlite3": "^5.1.2"
+  }
+}
